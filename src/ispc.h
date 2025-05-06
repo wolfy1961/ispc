@@ -137,6 +137,9 @@ class StorageClass {
     Kind m_kind = Kind::NONE;
 };
 
+// Stack smash protection
+enum SSPKind { SSPNone, SSPOn, SSPStrong, SSPReq };
+
 // Enumerant for address spaces.
 enum class AddressSpace {
     ispc_default,  // 0 = ispc_private
@@ -983,6 +986,9 @@ struct Globals {
        This address the new linker introduced in Xcode 15 that issues a warning if version when no version is provided.
        https://github.com/ispc/ispc/issues/3143  */
     llvm::VersionTuple darwinVersionMin;
+
+    /* Stores the stack smash protection setting. */
+    SSPKind SSPLevel;
 };
 
 // This is used when empty string is used for "--darwin-version-min"
