@@ -142,6 +142,9 @@ class StorageClass {
 // Stack smash protection
 enum class SSPKind { SSPNone, SSPOn, SSPStrong, SSPReq };
 
+// LTO kind
+enum class LTOKind { None, Full, Thin };
+
 // Enumerant for address spaces.
 enum class AddressSpace {
     ispc_default,  // 0 = ispc_private
@@ -971,6 +974,12 @@ struct Globals {
 
     /* Stores the stack smash protection setting. */
     SSPKind SSPLevel;
+
+    /* Support for full and thin LTO */
+    LTOKind LTO;
+
+    /* When true, emit the unified LTO module flag. */
+    bool unifiedLTO;
 };
 
 // This is used when empty string is used for "--darwin-version-min"

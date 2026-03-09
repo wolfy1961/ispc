@@ -487,6 +487,8 @@ class Module {
 
     static bool writeBitcode(llvm::Module *module, std::string outFileName, OutputType outputType);
 
+    static bool writeLTOBitcode(llvm::Module *module, llvm::raw_fd_ostream &fos, OutputType outputType);
+
     /**
      * Writes all output files for the current module.
      *

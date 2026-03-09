@@ -16,5 +16,8 @@ add_ispc_example(NAME "options"
               ISPC_IA_TARGETS ${ISPC_IA_TARGETS}
               ISPC_ARM_TARGETS ${ISPC_ARM_TARGETS}
               ISPC_SRC_NAME ${ISPC_SRC_NAME}
+              ISPC_FLAGS ${ISPC_FLAGS}
               TARGET_SOURCES ${TARGET_SOURCES}
-              USE_COMMON_SETTINGS)
+              USE_COMMON_SETTINGS
+              USE_FULL_LTO
+              USE_THIN_LTO)

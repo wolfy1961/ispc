@@ -510,7 +510,7 @@ Examples:
         print(f"{build_dir} already exists")
 
     print("Build ISPC")
-    build_cmd = ["cmake", "--build", str(build_dir), "--parallel", str(nproc)]
+    build_cmd = ["cmake", "--build", str(build_dir), "--verbose", "--parallel", str(nproc)]
     if is_windows:
         build_cmd.extend(["--config", build_type])
     run_command(build_cmd)

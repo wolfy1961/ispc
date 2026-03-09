@@ -119,6 +119,12 @@ static ArgsParseResult usage() {
         "    [--include-float16-conversions]\tAdd float16 conversion functions permanently to the compiled module\n");
     printf("    [--ignore-preprocessor-errors]\tSuppress errors from the preprocessor\n");
     printf("    [--instrument]\t\t\tEmit instrumentation to gather performance data\n");
+    printf("    [--lto]\t\t\tGenerate code suitable for LTO (linktime optimization). Equivalent to --lto=full.\n");
+    printf("    [--lto=<option>]\t\t\tGenerate code suitable for LTO (linktime optimization).\n");
+    printf("        full\t\t\tGenerate code for full LTO.\n");
+    printf("        thin\t\t\tGenerate code for thin LTO.\n");
+    printf("        none\t\t\tDo not generate code for LTO (default).\n");
+    printf("    [--unified-lto]\t\t\tSet the UnifiedLTO module flag. Has no effect if lto is not requested.\n");
     printf("    [--math-lib=<option>]\t\tSelect math library\n");
     printf("        default\t\t\t\tUse ispc's built-in math functions\n");
     printf("        fast\t\t\t\tUse high-performance but lower-accuracy math functions\n");
@@ -819,7 +825,11 @@ ArgsParseResult ispc::ParseCommandLineArgs(int argc, char *argv[], std::string &
         } else if (!strcmp(argv[i], "--emit-llvm-text")) {
             output.type = Module::BitcodeText;
         } else if (!strcmp(argv[i], "--emit-obj")) {
-            output.type = Module::Object;
+            if (g->LTO == LTOKind::None) {
+                output.type = Module::Object;
+            } else {
+                Warning(SourcePos(), "--emit-obj is ignored with LTO.");
+            }
         }
 #ifdef ISPC_XE_ENABLED
         else if (!strcmp(argv[i], "--emit-spirv")) {
@@ -1026,6 +1036,24 @@ ArgsParseResult ispc::ParseCommandLineArgs(int argc, char *argv[], std::string &
             } else {
                 errorHandler.AddError("Unknown --stack-protector= option \"%s\".", level);
             }
+        } else if (!strcmp(argv[i], "--lto")) {
+            g->LTO = LTOKind::Full;
+            output.type = Module::Bitcode;
+        } else if (!strncmp(argv[i], "--lto=", 6)) {
+            const char *kind = argv[i] + strlen("--lto=");
+            if (!strcmp(kind, "full")) {
+                g->LTO = LTOKind::Full;
+                output.type = Module::Bitcode;
+            } else if (!strcmp(kind, "thin")) {
+                g->LTO = LTOKind::Thin;
+                output.type = Module::Bitcode;
+            } else if (!strcmp(kind, "none")) {
+                g->LTO = LTOKind::None;
+            } else {
+                errorHandler.AddError("Unknown --lto= option \"%s\".", kind);
+            }
+        } else if (!strcmp(argv[i], "--unified-lto")) {
+            g->unifiedLTO = true;
         } else if (!strcmp(argv[i], "-o")) {
             if (++i != argc) {
                 output.out = argv[i];
@@ -1214,6 +1242,9 @@ ArgsParseResult ispc::ParseCommandLineArgs(int argc, char *argv[], std::string &
             Warning(SourcePos(), "--arch switch is ignored for PS4/PS5 target OS. x86-64 arch is used.");
             arch = Arch::x86_64;
         }
+        if (g->target_os == TargetOS::ps5 && g->LTO != LTOKind::None) {
+            g->unifiedLTO = true;
+        }
     }
 
     // Default setting for "custom_linux"
@@ -1364,6 +1395,19 @@ ArgsParseResult ispc::ParseCommandLineArgs(int argc, char *argv[], std::string &
         } else {
             g->debugInfoType = Globals::DebugInfoType::DWARF;
         }
+    }
+
+    // With LTO, insist on Bitcode or Bitcode_text output.
+    if (g->LTO != LTOKind::None) {
+        if (output.type != Module::Bitcode && output.type != Module::BitcodeText) {
+            Error(SourcePos(), "LTO requires bitcode output.");
+            return ArgsParseResult::failure;
+        }
+    }
+
+    // Requesting unified lto without LTO is not useful.
+    if (g->unifiedLTO && g->LTO == LTOKind::None) {
+        Warning(SourcePos(), "Requesting Unified LTO has no effect without also requesting LTO.");
     }
 
     // This needs to happen after the TargetOS is decided.

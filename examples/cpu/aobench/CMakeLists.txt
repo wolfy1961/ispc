@@ -16,4 +16,6 @@ add_ispc_example(NAME "aobench" ISPC_SRC_NAME ${ISPC_SRC_NAME}
               ISPC_ARM_TARGETS ${ISPC_ARM_TARGETS}
               TARGET_SOURCES ${TARGET_SOURCES}
               USE_COMMON_SETTINGS
+              USE_FULL_LTO
+              USE_THIN_LTO
               RUN_ARGS "256" "256")

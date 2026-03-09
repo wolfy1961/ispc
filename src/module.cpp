@@ -32,6 +32,8 @@
 #include <utility>
 
 #include <clang/Basic/Version.h>
+#include <llvm/Analysis/ModuleSummaryAnalysis.h>
+#include <llvm/Analysis/ProfileSummaryInfo.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/IR/DataLayout.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -1586,6 +1588,26 @@ bool Module::writeOutput() {
         }
     }
 
+    // Add LTO module flags
+    if (g->LTO != LTOKind::None) {
+       if (g->unifiedLTO) {
+           if (!module->getModuleFlag("UnifiedLTO")) {
+               module->addModuleFlag(llvm::Module::Error, "UnifiedLTO", uint32_t(1));
+           }
+       }
+
+       bool enableSplitLTO = g->unifiedLTO || g->LTO == LTOKind::Full;
+       if (!module->getModuleFlag("EnableSplitLTOUnit")) {
+           module->addModuleFlag(llvm::Module::Error, "EnableSplitLTOUnit", uint32_t(enableSplitLTO));
+       }
+
+       if (g->LTO == LTOKind::Full && !g->unifiedLTO) {
+           if (!module->getModuleFlag("ThinLTO")) {
+               module->addModuleFlag(llvm::Module::Error, "ThinLTO", uint32_t(0));
+           }
+       }
+    }
+
     // SIC! (verifyModule() == TRUE) means "failed", see llvm-link code.
     if ((outputType != CPPStub) && llvm::verifyModule(*module, &llvm::errs())) {
         FATAL("Resulting module verification failed!");
@@ -1643,10 +1665,28 @@ bool Module::writeBitcode(llvm::Module *module, std::string outFileName, OutputT
     }
 
     llvm::raw_fd_ostream fos(fd, (fd != 1), false);
+
+    if (g->LTO != LTOKind::None) {
+        return writeLTOBitcode(module, fos, outputType);
+    }
+
     if (outputType == Bitcode) {
         llvm::WriteBitcodeToFile(*module, fos);
     } else if (outputType == BitcodeText) {
         module->print(fos, nullptr);
+    }
+    return true;
+}
+
+// LTO support
+bool Module::writeLTOBitcode(llvm::Module *module, llvm::raw_fd_ostream &fos, OutputType outputType) {
+    llvm::ProfileSummaryInfo PSI (*module);
+    llvm::ModuleSummaryIndex Index = llvm::buildModuleSummaryIndex(*module, nullptr, &PSI);
+    if (outputType == Bitcode) {
+        llvm::WriteBitcodeToFile(*module, fos, true, &Index);
+    } else if (outputType == BitcodeText) {
+        module->print(fos, nullptr);
+        Index.print(fos);
     }
     return true;
 }

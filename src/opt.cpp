@@ -151,6 +151,29 @@ DebugModulePassManager::DebugModulePassManager(llvm::Module &M, int optLevel) : 
 
     SI.registerCallbacks(PIC, &mam);
 
+    // LTO support
+    if (g->LTO != LTOKind::None) {
+        llvm::OptimizationLevel OptLevel = llvm::OptimizationLevel::O0;
+        switch (m_optLevel) {
+            case 1:
+                 OptLevel = llvm::OptimizationLevel::O1;
+                 break;
+            case 2:
+                 OptLevel = llvm::OptimizationLevel::O2;
+                 break;
+            case 3:
+                 OptLevel = llvm::OptimizationLevel::O3;
+                 break;
+            default:
+                 break;
+        }
+        if (g->LTO == LTOKind::Full) {
+            mpm.addPass(pb.buildLTOPreLinkDefaultPipeline(OptLevel));
+        } else {
+            mpm.addPass(pb.buildThinLTOPreLinkDefaultPipeline(OptLevel));
+        }
+    }
+
     // Register all the analysis passes
     fam.registerPass([&] { return targetMachine->getTargetIRAnalysis(); });
     fam.registerPass([&] { return llvm::TargetLibraryAnalysis(targetLibraryInfo); });

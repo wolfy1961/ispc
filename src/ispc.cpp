@@ -2534,11 +2534,9 @@ Target::Target(Arch arch, const char *cpu, ISPCTarget ispc_target, PICLevel picL
         // It's not necessary to set target-cpu and target-features but it's useful for debugging purposes and
         // follows LLVM behavior on ARM
         llvm::AttrBuilder *fattrBuilder = new llvm::AttrBuilder(*g->ctx);
-#ifdef ISPC_ARM_ENABLED
-        if (m_isa == Target::NEON) {
-            fattrBuilder->addAttribute("target-cpu", this->m_cpu);
-        }
-#endif
+
+        // Add the target cpu for all platforms.
+        fattrBuilder->addAttribute("target-cpu", this->m_cpu);
 
         for (auto const &f_attr : m_funcAttributes) {
             fattrBuilder->addAttribute(f_attr.first, f_attr.second);
@@ -3457,6 +3455,8 @@ Globals::Globals() {
     target = nullptr;
     ctx = new llvm::LLVMContext;
     SSPLevel = SSPKind::SSPNone;
+    LTO = LTOKind::None;
+    unifiedLTO = false;
 
 #ifdef ISPC_XE_ENABLED
     stackMemSize = 0;

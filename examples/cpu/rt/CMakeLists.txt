@@ -24,4 +24,6 @@ add_ispc_example(NAME "rt"
               TARGET_SOURCES ${TARGET_SOURCES}
               DATA_FILES ${DATA_FILES}
               USE_COMMON_SETTINGS
+              USE_FULL_LTO
+              USE_THIN_LTO
               RUN_ARGS "${CMAKE_CURRENT_SOURCE_DIR}/cornell")
