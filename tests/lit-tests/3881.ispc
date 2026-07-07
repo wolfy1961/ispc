@@ -5,11 +5,11 @@
 // lAllDivBaseEqual.
 // See https://github.com/ispc/ispc/issues/3881
 
-// RUN: %{ispc} %s --target=avx2-i32x16 --arch=x86_64 -O2 --nowrap --emit-llvm-text -o - | FileCheck %s
+// RUN: %{ispc} %s --target=avx2-i32x16 --arch=x86_64 -O2 --nostdlib --nowrap --emit-llvm-text -o - | FileCheck %s
 
 // REQUIRES: X86_ENABLED
 
-// CHECK-LABEL: @repro64
+// CHECK-LABEL: define {{.*}} @repro64___
 // CHECK: @llvm.x86.avx2.gather
 export void repro64(uniform int n, uniform int colorCount,
                     const uniform int* uniform lut, uniform int* uniform result) {
@@ -25,7 +25,7 @@ export void repro64(uniform int n, uniform int colorCount,
 
 // 32-bit variant: a right-shift by 31 of a 32-bit value hit the same
 // `1 << 31 == INT_MIN` overflow in the divisor computation.
-// CHECK-LABEL: @repro32
+// CHECK-LABEL: define {{.*}} @repro32___
 // CHECK: @llvm.x86.avx2.gather
 export void repro32(uniform int n, uniform int colorCount,
                     const uniform int* uniform lut, uniform int* uniform result) {
