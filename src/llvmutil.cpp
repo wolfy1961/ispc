@@ -11,6 +11,7 @@
 #include "llvmutil.h"
 #include "type.h"
 
+#include <climits>
 #include <cstdlib>
 #include <map>
 #include <set>
@@ -995,6 +996,14 @@ static bool lAllDivBaseEqual(llvm::Value *val, int64_t baseValue, int vectorLeng
         // the addConstants[], mod baseValue.  If we round that up to the
         // next power of 2, we'll have a value that will be no greater than
         // baseValue and sometimes less.
+        //
+        // The requiredAlignment computation below is done in int; if baseValue
+        // is large enough that (addConstants[i] % baseValue) could overflow
+        // int, the alignment could be corrupted and produce a false-positive
+        // equality, so conservatively give up.
+        if (baseValue > INT_MAX) {
+            return false;
+        }
         int maxMod = int(addConstants[0] % baseValue);
         for (int i = 1; i < vectorLength; ++i) {
             maxMod = std::max(maxMod, int(addConstants[i] % baseValue));
@@ -1034,8 +1043,16 @@ static bool lVectorShiftRightAllEqual(llvm::Value *val, llvm::Value *shift, int 
     }
 
     // Now see if the value divided by (1 << shift) can be determined to
-    // have the same value for all vector elements.
-    int pow2 = 1 << shiftAmount[0];
+    // have the same value for all vector elements.  The shift amount must be
+    // within the operand's bit width (a shift at or beyond it is undefined in
+    // LLVM) and small enough that the power-of-two divisor fits in a positive
+    // int64_t.  Otherwise we can't form a valid divisor, so conservatively
+    // give up.
+    unsigned int bitWidth = val->getType()->getScalarSizeInBits();
+    if (shiftAmount[0] < 0 || (uint64_t)shiftAmount[0] >= bitWidth || shiftAmount[0] >= 63) {
+        return false;
+    }
+    int64_t pow2 = (int64_t)1 << shiftAmount[0];
     bool canAdd = true;
     std::vector<llvm::PHINode *> seenPhis;
     bool eq = lAllDivBaseEqual(val, pow2, vectorLength, seenPhis, canAdd);
