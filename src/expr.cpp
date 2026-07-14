@@ -1071,8 +1071,9 @@ static llvm::Constant *lLLVMConstantValue(const Type *type, llvm::LLVMContext *c
             return isUniform ? LLVMInt8(i) : LLVMInt8Vector(i);
         }
         case AtomicType::TYPE_UINT8: {
-            unsigned int i = (unsigned int)value;
-            return isUniform ? LLVMUInt8(i) : LLVMUInt8Vector(i);
+            int i = (int)value;
+            Assert((double)i == value);
+            return isUniform ? LLVMUInt8((uint8_t)i) : LLVMUInt8Vector((uint8_t)i);
         }
         case AtomicType::TYPE_INT16: {
             int i = (int)value;
@@ -1080,8 +1081,9 @@ static llvm::Constant *lLLVMConstantValue(const Type *type, llvm::LLVMContext *c
             return isUniform ? LLVMInt16(i) : LLVMInt16Vector(i);
         }
         case AtomicType::TYPE_UINT16: {
-            unsigned int i = (unsigned int)value;
-            return isUniform ? LLVMUInt16(i) : LLVMUInt16Vector(i);
+            int i = (int)value;
+            Assert((double)i == value);
+            return isUniform ? LLVMUInt16((uint16_t)i) : LLVMUInt16Vector((uint16_t)i);
         }
         case AtomicType::TYPE_INT32: {
             int i = (int)value;
@@ -1089,8 +1091,9 @@ static llvm::Constant *lLLVMConstantValue(const Type *type, llvm::LLVMContext *c
             return isUniform ? LLVMInt32(i) : LLVMInt32Vector(i);
         }
         case AtomicType::TYPE_UINT32: {
-            unsigned int i = (unsigned int)value;
-            return isUniform ? LLVMUInt32(i) : LLVMUInt32Vector(i);
+            int64_t i = (int64_t)value;
+            Assert((double)i == value);
+            return isUniform ? LLVMUInt32((uint32_t)i) : LLVMUInt32Vector((uint32_t)i);
         }
         case AtomicType::TYPE_INT64: {
             int64_t i = (int64_t)value;
@@ -1098,9 +1101,9 @@ static llvm::Constant *lLLVMConstantValue(const Type *type, llvm::LLVMContext *c
             return isUniform ? LLVMInt64(i) : LLVMInt64Vector(i);
         }
         case AtomicType::TYPE_UINT64: {
-            uint64_t i = (uint64_t)value;
-            Assert(value == (int64_t)i);
-            return isUniform ? LLVMUInt64(i) : LLVMUInt64Vector(i);
+            int64_t i = (int64_t)value;
+            Assert((double)i == value);
+            return isUniform ? LLVMUInt64((uint64_t)i) : LLVMUInt64Vector((uint64_t)i);
         }
         case AtomicType::TYPE_FLOAT16: {
             llvm::APFloat apf16 = lCreateAPFloat(value, LLVMTypes::Float16Type);
