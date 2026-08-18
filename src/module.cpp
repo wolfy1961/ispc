@@ -1590,22 +1590,22 @@ bool Module::writeOutput() {
 
     // Add LTO module flags
     if (g->LTO != LTOKind::None) {
-       if (g->unifiedLTO) {
-           if (!module->getModuleFlag("UnifiedLTO")) {
-               module->addModuleFlag(llvm::Module::Error, "UnifiedLTO", uint32_t(1));
-           }
-       }
+        if (g->unifiedLTO) {
+            if (!module->getModuleFlag("UnifiedLTO")) {
+                module->addModuleFlag(llvm::Module::Error, "UnifiedLTO", uint32_t(1));
+            }
+        }
 
-       bool enableSplitLTO = g->unifiedLTO || g->LTO == LTOKind::Full;
-       if (!module->getModuleFlag("EnableSplitLTOUnit")) {
-           module->addModuleFlag(llvm::Module::Error, "EnableSplitLTOUnit", uint32_t(enableSplitLTO));
-       }
+        bool enableSplitLTO = g->unifiedLTO || g->LTO == LTOKind::Full;
+        if (!module->getModuleFlag("EnableSplitLTOUnit")) {
+            module->addModuleFlag(llvm::Module::Error, "EnableSplitLTOUnit", uint32_t(enableSplitLTO));
+        }
 
-       if (g->LTO == LTOKind::Full && !g->unifiedLTO) {
-           if (!module->getModuleFlag("ThinLTO")) {
-               module->addModuleFlag(llvm::Module::Error, "ThinLTO", uint32_t(0));
-           }
-       }
+        if (g->LTO == LTOKind::Full && !g->unifiedLTO) {
+            if (!module->getModuleFlag("ThinLTO")) {
+                module->addModuleFlag(llvm::Module::Error, "ThinLTO", uint32_t(0));
+            }
+        }
     }
 
     // SIC! (verifyModule() == TRUE) means "failed", see llvm-link code.
@@ -1680,7 +1680,7 @@ bool Module::writeBitcode(llvm::Module *module, std::string outFileName, OutputT
 
 // LTO support
 bool Module::writeLTOBitcode(llvm::Module *module, llvm::raw_fd_ostream &fos, OutputType outputType) {
-    llvm::ProfileSummaryInfo PSI (*module);
+    llvm::ProfileSummaryInfo PSI(*module);
     llvm::ModuleSummaryIndex Index = llvm::buildModuleSummaryIndex(*module, nullptr, &PSI);
     if (outputType == Bitcode) {
         llvm::WriteBitcodeToFile(*module, fos, true, &Index);

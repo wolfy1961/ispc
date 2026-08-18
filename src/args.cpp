@@ -123,7 +123,6 @@ static ArgsParseResult usage() {
     printf("    [--lto=<option>]\t\t\tGenerate code suitable for LTO (linktime optimization).\n");
     printf("        full\t\t\tGenerate code for full LTO.\n");
     printf("        thin\t\t\tGenerate code for thin LTO.\n");
-    printf("        none\t\t\tDo not generate code for LTO (default).\n");
     printf("    [--unified-lto]\t\t\tSet the UnifiedLTO module flag. Has no effect if lto is not requested.\n");
     printf("    [--math-lib=<option>]\t\tSelect math library\n");
     printf("        default\t\t\t\tUse ispc's built-in math functions\n");
@@ -1047,8 +1046,6 @@ ArgsParseResult ispc::ParseCommandLineArgs(int argc, char *argv[], std::string &
             } else if (!strcmp(kind, "thin")) {
                 g->LTO = LTOKind::Thin;
                 output.type = Module::Bitcode;
-            } else if (!strcmp(kind, "none")) {
-                g->LTO = LTOKind::None;
             } else {
                 errorHandler.AddError("Unknown --lto= option \"%s\".", kind);
             }

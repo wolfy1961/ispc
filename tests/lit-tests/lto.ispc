@@ -3,8 +3,6 @@
 // RUN: %{ispc} %s --target=host --lto=thin --emit-llvm-text -O2 -o - 2>&1 | FileCheck --check-prefixes=CHECK_ALL,CHECK_SPLIT0,CHECK_THIN %s
 // RUN: %{ispc} %s --target=host --lto=full --unified-lto --emit-llvm-text -O2 -o - 2>&1 | FileCheck --check-prefixes=CHECK_ALL,CHECK_SPLIT1,CHECK_UNIFIED %s
 // RUN: %{ispc} %s --target=host --lto=thin --unified-lto --emit-llvm-text -O2 -o - 2>&1 | FileCheck --check-prefixes=CHECK_ALL,CHECK_SPLIT1,CHECK_UNIFIED %s
-// RUN: %{ispc} %s --target=host --lto=none --emit-llvm-text -O2 -o - 2>&1 | FileCheck --check-prefixes=CHECK_NONE %s
-
 // RUN: %{ispc} %s --target=host --unified-lto --emit-llvm-text -O2 -o - 2>&1 | FileCheck --check-prefixes=CHECK_OUTPUT_WARN1 %s
 // RUN: %{ispc} %s --target=host --lto --emit-obj -O2 -o - 2>&1 | FileCheck --check-prefixes=CHECK_OUTPUT_WARN2 %s
 void func0() {

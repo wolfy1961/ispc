@@ -730,7 +730,6 @@ endif()
 list(APPEND INCLUDE_DIRECTORIES
     ${LLVM_INCLUDE_DIRS}
     ${XE_DEPS_DIR}/include
-    /usr/include/x86_64-linux-gnu
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/include
     ${CMAKE_CURRENT_SOURCE_DIR}/common
